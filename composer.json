@@ -1,0 +1,23 @@
+{
+  "name": "brosua/form-search",
+  "type": "typo3-cms-extension",
+  "description": "Add search functionality to the TYPO3 backend form manager",
+  "keywords": ["typo3", "forms"],
+  "license": "GPL-2.0-or-later",
+  "require": {
+    "typo3/cms-core": "^11.5"
+  },
+  "require-dev": {
+    "friendsofphp/php-cs-fixer": "^3.5"
+  },
+  "autoload": {
+    "psr-4": {
+      "Brosua\\FormSearch\\": "Classes/"
+    }
+  },
+  "extra": {
+    "typo3/cms": {
+      "extension-key": "form_search"
+    }
+  }
+}
