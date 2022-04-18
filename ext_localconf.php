@@ -15,6 +15,6 @@ defined('TYPO3') or die();
     );
 
     $GLOBALS['TYPO3_CONF_VARS']['SYS']['Objects'][\TYPO3\CMS\Form\Controller\FormManagerController::class] = [
-        'className' => \Brosua\FormSearch\Xclass\FormManagerController::class
+        'className' => \Brosua\FormSearch\Xclass\FormManagerController::class,
     ];
 })();

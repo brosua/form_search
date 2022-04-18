@@ -5,10 +5,7 @@
   "keywords": ["typo3", "forms"],
   "license": "GPL-2.0-or-later",
   "require": {
-    "typo3/cms-core": "^11.5"
-  },
-  "require-dev": {
-    "friendsofphp/php-cs-fixer": "^3.5"
+    "typo3/cms-form": "^11.5"
   },
   "autoload": {
     "psr-4": {
@@ -18,6 +15,15 @@
   "extra": {
     "typo3/cms": {
       "extension-key": "form_search"
+    }
+  },
+  "require-dev": {
+    "typo3/coding-standards": "^0.5.2"
+  },
+  "config": {
+    "allow-plugins": {
+      "typo3/class-alias-loader": true,
+      "typo3/cms-composer-installers": true
     }
   }
 }
