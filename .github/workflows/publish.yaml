@@ -1,9 +1,8 @@
 name: publish
-
 on:
   push:
-    tag:
-
+    tags:
+      - '*'
 jobs:
   publish:
     name: Publish new version to TER
@@ -11,7 +10,6 @@ jobs:
     runs-on: ubuntu-20.04
     env:
       TYPO3_API_TOKEN: ${{ secrets.TYPO3_API_TOKEN }}
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -21,6 +19,7 @@ jobs:
           if ! [[ ${{ github.ref }} =~ ^refs/tags/[0-9]{1,3}.[0-9]{1,3}.[0-9]{1,3}$ ]]; then
             exit 1
           fi
+
       - name: Get version
         id: get-version
         run: echo ::set-output name=version::${GITHUB_REF/refs\/tags\//}
@@ -29,16 +28,19 @@ jobs:
         id: get-comment
         run: |
           readonly local comment=$(git tag -n10 -l ${{ steps.get-version.outputs.version }} | sed "s/^[0-9.]*[ ]*//g")
+
           if [[ -z "${comment// }" ]]; then
-            echo ::set-output name=comment::Released version ${{ steps.get-version.outputs.version }} of form-search
+            echo ::set-output name=comment::Released version ${{ steps.get-version.outputs.version }} of form_search
           else
             echo ::set-output name=comment::$comment
           fi
+
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: 8.1
+          php-version: 7.4
           extensions: intl, mbstring, json, zip, curl
+          tools: composer:v2
 
       - name: Install tailor
         run: composer global require typo3/tailor --prefer-dist --no-progress --no-suggest
