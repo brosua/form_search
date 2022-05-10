@@ -76,6 +76,6 @@ class FormManagerController extends \TYPO3\CMS\Form\Controller\FormManagerContro
 
     protected function valueContainsSearchTerm(string $value, string $searchTerm): bool
     {
-        return strpos($value, $searchTerm) !== false;
+        return strpos(strtolower($value), strtolower($searchTerm)) !== false;
     }
 }
