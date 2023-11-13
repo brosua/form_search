@@ -3,49 +3,44 @@
 namespace Brosua\FormSearch\Xclass;
 
 use Psr\Http\Message\ResponseInterface;
-use TYPO3\CMS\Core\Page\JavaScriptModuleInstruction;
-use TYPO3\CMS\Core\Pagination\ArrayPaginator;
-use TYPO3\CMS\Core\Pagination\SimplePagination;
+use Psr\Http\Message\ServerRequestInterface;
+use TYPO3\CMS\Backend\Template\ModuleTemplate;
+use TYPO3\CMS\Core\Information\Typo3Version;
+use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 class FormManagerController extends \TYPO3\CMS\Form\Controller\FormManagerController
 {
-    public function indexAction(int $page = 1, string $searchTerm = ''): ResponseInterface
+    public function indexAction(int $page = 1): ResponseInterface
     {
-        $forms = $searchTerm ? $this->getAvailableFormDefinitionsBySearchTerm($searchTerm) : $this->getAvailableFormDefinitions();
-        $arrayPaginator = new ArrayPaginator($forms, $page, $this->limit);
-        $pagination = new SimplePagination($arrayPaginator);
-
-        $this->view->assignMultiple(
-            [
-                'paginator' => $arrayPaginator,
-                'pagination' => $pagination,
-                'searchTerm' => $searchTerm,
-                'stylesheets' => $this->resolveResourcePaths($this->formSettings['formManager']['stylesheets']),
-                'dynamicRequireJsModules' => $this->formSettings['formManager']['dynamicRequireJsModules'],
-                'formManagerAppInitialData' => json_encode($this->getFormManagerAppInitialData()),
-            ]
-        );
-        if (!empty($this->formSettings['formManager']['javaScriptTranslationFile'])) {
-            $this->pageRenderer->addInlineLanguageLabelFile($this->formSettings['formManager']['javaScriptTranslationFile']);
+        if ((GeneralUtility::makeInstance(Typo3Version::class))->getMajorVersion() < 12) {
+            $searchTerm = $this->request->getQueryParams()['tx_form_web_formformbuilder']['searchTerm'] ?? null;
+            $this->view->assign('searchTerm', $searchTerm);
         }
+        return parent::indexAction($page);
+    }
 
-        $requireJsModules = array_filter(
-            $this->formSettings['formManager']['dynamicRequireJsModules'],
-            fn (string $name) => in_array($name, self::JS_MODULE_NAMES, true),
-            ARRAY_FILTER_USE_KEY
-        );
-        $this->pageRenderer->getJavaScriptRenderer()->addJavaScriptModuleInstruction(
-            JavaScriptModuleInstruction::forRequireJS('TYPO3/CMS/Form/Backend/Helper', 'Helper')
-                ->invoke('dispatchFormManager', $requireJsModules, $this->getFormManagerAppInitialData())
-        );
-        $moduleTemplate = $this->initializeModuleTemplate($this->request);
-        $moduleTemplate->setModuleClass($this->request->getPluginName() . '_' . $this->request->getControllerName());
-        $moduleTemplate->setFlashMessageQueue($this->getFlashMessageQueue());
-        $moduleTemplate->setTitle(
-            $this->getLanguageService()->sL('LLL:EXT:form/Resources/Private/Language/locallang_module.xlf:mlang_tabs_tab')
-        );
-        $moduleTemplate->setContent($this->view->render());
-        return $this->htmlResponse($moduleTemplate->renderContent());
+    protected function initializeModuleTemplate(ServerRequestInterface $request): ModuleTemplate
+    {
+        $moduleTemplate = parent::initializeModuleTemplate($request);
+        if ((GeneralUtility::makeInstance(Typo3Version::class))->getMajorVersion() > 11) {
+            $searchTerm = $this->request->getQueryParams()['searchTerm'] ?? null;
+            $moduleTemplate->assign('searchTerm', $searchTerm);
+        }
+        return $moduleTemplate;
+    }
+
+    protected function getAvailableFormDefinitions(): array
+    {
+        if ((GeneralUtility::makeInstance(Typo3Version::class))->getMajorVersion() < 12) {
+            if (isset($this->request->getQueryParams()['tx_form_web_formformbuilder']['searchTerm'])) {
+                return $this->getAvailableFormDefinitionsBySearchTerm($this->request->getQueryParams()['tx_form_web_formformbuilder']['searchTerm']);
+            }
+        } else {
+            if (isset($this->request->getQueryParams()['searchTerm'])) {
+                return $this->getAvailableFormDefinitionsBySearchTerm($this->request->getQueryParams()['searchTerm']);
+            }
+        }
+        return parent::getAvailableFormDefinitions();
     }
 
     protected function getAvailableFormDefinitionsBySearchTerm(string $searchTerm): array

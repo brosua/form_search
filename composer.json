@@ -5,7 +5,7 @@
   "keywords": ["typo3", "forms"],
   "license": "GPL-2.0-or-later",
   "require": {
-    "typo3/cms-form": "^11.5"
+    "typo3/cms-form": "^11.5 || ^12.4"
   },
   "autoload": {
     "psr-4": {
